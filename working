@@ -1,6 +1,6 @@
 #turicreate_recommendation_engine
 #coded for python
-#using a windows laptop, opened in ConEmu, linked to ubuntu via WSL 
+#using a windows laptop, opened in ConEmu, linked to ubuntu via WSL.  windows is not supported for turicreate as of 8/22/18 
 
 #Requires installing turicreate, which requires using IOS or LINUX.  follow the instructions here:
 #https://github.com/apple/turicreate/blob/master/README.md
@@ -10,12 +10,12 @@
 import pandas as pd
 
 #%matplotlib inline
-#that last line was hashed because this was written in IPython, not Sublimetext.  
-#in order to get around this, I use the Python_cmd build system within sublime text
+#that last line was hashed because this was written in IPython, not Sublimetext. my config doesn't require it.  windows-only requires changing sublimetext build system.  check this out: https://stackoverflow.com/questions/10831882/matplotlib-plots-not-displaying-in-sublimetext
+
 
 #if you get an error with matplotlib, specifically when calling 'import matplotlib.pyplot as plt':
 #ImportError: No module named _tkinter, please install the python-tk package
-#this stackoverflow example solved my problem:
+#this stackoverflow example solved my problem (I had to add sudo at the front of the code in order to install the package):
 #https://stackoverflow.com/questions/4783810/install-tkinter-for-python
 import matplotlib  
 import matplotlib.pyplot as plt 
