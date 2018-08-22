@@ -13,7 +13,12 @@ import pandas as pd
 #that last line was hashed because this was written in IPython, not Sublimetext.  
 #in order to get around this, I use the Python_cmd build system within sublime text
 
-import matplotlib
+#if you get an error with matplotlib, specifically when calling 'import matplotlib.pyplot as plt':
+#ImportError: No module named _tkinter, please install the python-tk package
+#this stackoverflow example solved my problem:
+#https://stackoverflow.com/questions/4783810/install-tkinter-for-python
+import matplotlib  
+import matplotlib.pyplot as plt 
 import numpy as np
 import turicreate
 import os
@@ -37,5 +42,3 @@ train_data = turicreate.SFrame(ratings_train)
 test_data = turicreate.SFrame(ratings_test)
 print(test_data)
 print("Program is COMPLETE, mi sybiostro")
-
-
