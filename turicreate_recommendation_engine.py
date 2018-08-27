@@ -36,6 +36,13 @@ i_cols = ['movie id', 'movie title' ,'release date','video release date', 'IMDb 
 items = pd.read_csv('ml-100k/u.item', sep='|', names=i_cols,
 encoding='latin-1')
 
+#Reading users file:
+u_cols = ['user_id', 'age', 'sex', 'occupation', 'zip_code']
+users = pd.read_csv('ml-100k/u.user', sep='|', names=u_cols,encoding='latin-1')
+
+#Reading ratings file:
+r_cols = ['user_id', 'movie_id', 'rating', 'unix_timestamp']
+ratings = pd.read_csv('ml-100k/u.data', sep='\t', names=r_cols,encoding='latin-1')
 
 #importing the test and train datasets
 r_cols = ['user_id', 'movie_id', 'rating', 'unix_timestamp']
@@ -63,5 +70,90 @@ item_sim_model = turicreate.item_similarity_recommender.create(train_data, user_
 #Making recommendations
 item_sim_recomm = item_sim_model.recommend(users=[1,2,3,4,5],k=5)
 item_sim_recomm.print_rows(num_rows=25)
+
+
+# Below is how matrix factorization works for predicting ratings:
+# for f = 1,2,....,k:
+# for rui in R :
+# predict rui
+# update puk and qki
+
+#the following is a function that can predict ratings
+class MF():
+
+    # Initializing the user-movie rating matrix, no. of latent features, alpha and beta.
+    def __init__(self, R, K, alpha, beta, iterations):
+        self.R = R
+        self.num_users, self.num_items = R.shape
+        self.K = K
+        self.alpha = alpha
+        self.beta = beta
+        self.iterations = iterations
+
+    # Initializing user-feature and movie-feature matrix 
+    def train(self):
+        self.P = np.random.normal(scale=1./self.K, size=(self.num_users, self.K))
+        self.Q = np.random.normal(scale=1./self.K, size=(self.num_items, self.K))
+
+        # Initializing the bias terms
+        self.b_u = np.zeros(self.num_users)
+        self.b_i = np.zeros(self.num_items)
+        self.b = np.mean(self.R[np.where(self.R != 0)])
+
+        # List of training samples
+        self.samples = [
+        (i, j, self.R[i, j])
+        for i in range(self.num_users)
+        for j in range(self.num_items)
+        if self.R[i, j] > 0
+        ]
+
+        # Stochastic gradient descent for given number of iterations
+        training_process = []
+        for i in range(self.iterations):
+        	np.random.shuffle(self.samples)
+        	self.sgd()
+        	mse = self.mse()
+        	training_process.append((i, mse))
+        if (i+1) % 20 == 0:
+            print("Iteration: %d ; error = %.4f" % (i+1, mse))
+
+        return training_process
+
+    # Computing total mean squared error
+    def mse(self):
+        xs, ys = self.R.nonzero()
+        predicted = self.full_matrix()
+        error = 0
+        for x, y in zip(xs, ys):
+            error += pow(self.R[x, y] - predicted[x, y], 2)
+        return np.sqrt(error)
+
+    # Stochastic gradient descent to get optimized P and Q matrix
+    def sgd(self):
+        for i, j, r in self.samples:
+            prediction = self.get_rating(i, j)
+            e = (r - prediction)
+
+            self.b_u[i] += self.alpha * (e - self.beta * self.b_u[i])
+            self.b_i[j] += self.alpha * (e - self.beta * self.b_i[j])
+
+            self.P[i, :] += self.alpha * (e * self.Q[j, :] - self.beta * self.P[i,:])
+            self.Q[j, :] += self.alpha * (e * self.P[i, :] - self.beta * self.Q[j,:])
+
+    # Ratings for user i and moive j
+    def get_rating(self, i, j):
+        prediction = self.b + self.b_u[i] + self.b_i[j] + self.P[i, :].dot(self.Q[j, :].T)
+        return prediction
+
+    # Full user-movie rating matrix
+    def full_matrix(self):
+        return mf.b + mf.b_u[:,np.newaxis] + mf.b_i[np.newaxis:,] + mf.P.dot(mf.Q.T)
+
+
+#the following, R, is a user-item matrix with 0s where movies have not been reviewed
+R= np.array(ratings.pivot(index = 'user_id', columns ='movie_id', values = 'rating').fillna(0))
+
+#Now let us predict all the missing ratings. Lets take K=20, alpha=0.001, beta=0.01 and iterations=100.
 
 print("Program is COMPLETE, mi sybiostro")
