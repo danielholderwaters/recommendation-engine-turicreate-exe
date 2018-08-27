@@ -153,7 +153,14 @@ class MF():
 
 #the following, R, is a user-item matrix with 0s where movies have not been reviewed
 R= np.array(ratings.pivot(index = 'user_id', columns ='movie_id', values = 'rating').fillna(0))
-
+print(R)
 #Now let us predict all the missing ratings. Lets take K=20, alpha=0.001, beta=0.01 and iterations=100.
+mf = MF(R, K=20, alpha=0.001, beta=0.01, iterations=100)
+training_process = mf.train()
+
+print("P x Q:")
+print(mf.full_matrix())
+
+
 
 print("Program is COMPLETE, mi sybiostro")
